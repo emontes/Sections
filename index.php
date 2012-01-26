@@ -25,6 +25,7 @@ require_once("mainfile.php");
 $module_name = basename(dirname(__FILE__));
 get_lang($module_name);
 define('NO_EDITOR', 1); //For Php-Nuke 7.8 remove it for previous vertions
+define('INDEX_FILE', true);
 
 function listsections() {
     global $sitename, $prefix, $db, $module_name, $currentlang,$pagetitle;
@@ -35,39 +36,25 @@ function listsections() {
 	where t2.language='$currentlang' and t1.secid = t2.secid and t1.parentid = 0
 	order by t1.color,t1.secid");
 	
-    OpenTable();
+    echo "<div class=\"content\">";
     echo "<center>"._SECWELCOME." $sitename.</center>";
-    //"._YOUCANFIND."</center><br><br>
-    echo "<table border=\"0\" align=\"center\">";
-    $count = 0;
 	while($row = $db->sql_fetchrow($result)) {
 	    
 	    $secid = intval($row['secid']);
 	    $secname = $row['secname'];
 		$seccolor = $row['color'];
         if ($count==3) {
-        echo "<tr>";
         $count = 0;
         }
-		echo "<td valign=\"top\" width=\"33%\">\n
-		<table width=\"100%\" border=\"1\">
-		<tr><td bgcolor=\"$seccolor\">
+		echo "<ul>
 		<a href=\"modules.php?name=$module_name&amp;op=listarticles&amp;secid=$secid\" class=\"topnav\">
 		<b>$secname</b></a>
-		</td></tr>
-		<tr><td>";
+		</ul>";
         listarticlessinheader($secid);
-
-		listasubsecciones($secid);
-		echo "</td></tr></table>";
-	    $count++;
-        if ($count==3) {
-          echo "</tr>";
-        }
-        echo "</td>";
+		listasubsecciones($secid);		
     }
-    echo "</table></center>";
-    CloseTable();
+   
+    echo "</div>";
     include ('footer.php');
 }
 
@@ -78,34 +65,22 @@ global $db,$currentlang,$module_name;
 	    from nuke_sections as t1, nuke_sections_titles as t2
 	    where t2.language='$currentlang' and t1.secid = t2.secid and t1.parentid = $secid
 	    order by t1.secid");
-	echo "<table border=\"0\" align=\"center\">";
+
 	$count=0;	
 	while($row = $db->sql_fetchrow($result)) {
 	    $secid2 = intval($row['secid']);
 	    $secname2 = $row['secname'];
 		$seccolor = $row['color'];
-		if ($count==1) {
-          echo "<tr>";
-          $count = 0;
-        }
-		echo "<td valign=\"top\" width=\"33%\">\n";
-		echo "<table border=\"1\" width=\"95%\" align=\"center\">\n
-		<tr><td bgcolor=\"$seccolor\">
-		<a href=\"modules.php?name=$module_name&amp;op=listarticles&amp;secid=$secid2\" class=\"topnav\">
-		$secname2</a>
-		</td></tr>";
-				$sublevel=$level+1;
-		echo "<tr><td>";		
+
+		echo "<ul>
+		<a href=\"modules.php?name=$module_name&amp;op=listarticles&amp;secid=$secid2\" class=\"topnav\">$secname2</a>
+		</ul>";
+				$sublevel=$level+1;	
 		listarticlessinheader($secid2,$sublevel-1);
-		echo "</td></tr></table>";
 		listasubsecciones($secid2,$sublevel);
-		$count++;
-        if ($count==1) {
-          echo "</tr>";
-        }
-        echo "</td>";
+		$count++;       
 	} // while
-	echo "</table>";
+
 }
 
 function listarticlessinheader($secid,$espacios=0) {
@@ -116,7 +91,7 @@ function listarticlessinheader($secid,$espacios=0) {
     } else {
     $querylang = "";
     }
-    //include ('header.php');
+
     $secid = intval($secid);
     $row_sec = $db->sql_fetchrow($db->sql_query("SELECT 
 	secname from ".$prefix."_sections where secid='$secid'"));
@@ -130,26 +105,19 @@ function listarticlessinheader($secid,$espacios=0) {
         for ($i=0;$i<$espacios;$i++){
 		  $raya.="<td>&nbsp;</td>";
 		}
-    //echo "<table border=\"0\" align=\"center\">\n";
+
     while($row = $db->sql_fetchrow($result)) {
         $artid = intval($row['artid']);
         $secid = intval($row['secid']);
         $title = $row['title'];
         $counter = $row['counter'];
-        /*echo "
-        <tr>
-		$raya
-		<td align=\"left\" nowrap>*/
-		echo "<font class=\"content\">
+
+		echo "
         <li><a href=\"modules.php?name=$module_name&amp;op=viewarticle&amp;artid=$artid\">$title</a> 
         <a href=\"modules.php?name=$module_name&amp;op=printpage&amp;artid=$artid\">
-      
+        </li>
         ";
     }
-   // echo "</table>";
-    
-    
-    //include ('footer.php');
 }
 
 function listarticles($secid) {
